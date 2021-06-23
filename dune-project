@@ -10,7 +10,7 @@
 
 (package
  (name camlpstreams)
- (synopsis "Stream library for use with Camlp4 and Camlp5")
+ (synopsis "The Stream and Genlex libraries for use with Camlp4 and Camlp5")
  (version 5.0)
  (description "
 This package provides two library modules:
