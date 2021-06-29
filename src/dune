@@ -1,6 +1,5 @@
 (library
  (name camlp_streams)
  (public_name camlp-streams)
- (modules Stream Genlex)
  (wrapped false)
  (flags :standard -w -9))
