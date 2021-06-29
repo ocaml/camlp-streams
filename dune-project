@@ -1,5 +1,6 @@
 (lang dune 2.5)
 (generate_opam_files true)
+(formatting disabled)
 
 (name camlp-streams)
 (source (github ocaml/camlp-streams))
