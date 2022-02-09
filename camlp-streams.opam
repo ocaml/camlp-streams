@@ -32,7 +32,7 @@ homepage: "https://github.com/ocaml/camlp-streams"
 bug-reports: "https://github.com/ocaml/camlp-streams/issues"
 depends: [
   "dune" {>= "2.7"}
-  "ocaml" {>= "4.05.0"}
+  "ocaml" {>= "4.02.3"}
   "odoc" {with-doc}
 ]
 build: [

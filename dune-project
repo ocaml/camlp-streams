@@ -35,5 +35,5 @@ but will be maintained and distributed separately in this camlpstreams package.
 ")
 
  (depends
-  (ocaml (>= 4.05.0)))
+  (ocaml (>= 4.02.3)))
 )
