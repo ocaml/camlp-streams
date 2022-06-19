@@ -28,7 +28,8 @@ let dune_fragment_for mod_name basename =
 (rule
   (target %s.mli)
   (action (with-stdout-to %%{target}
-    (echo "[@@@ocaml.warning \"-3\"] include module type of %s")))
+    (echo "[@@@ocaml.warning \"-3\"]\n\
+           include module type of struct include %s end")))
   (enabled_if (< %%{ocaml_version} 5.0)))
 
 (rule
