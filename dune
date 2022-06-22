@@ -2,8 +2,9 @@
 
 (* camlp-streams is built in three different ways, depending on the version of
    OCaml it's built for:
-   - 4.13 and earlier: empty library; Standard Library Stream and Genlex used
-   - 4.14: Standard Library Stream and Genlex re-exported without deprecation
+   - 4.06 and earlier: empty library; Standard Library Stream and Genlex used
+   - 4.07-4.14: Standard Library Stream and Genlex re-exported (without
+     deprecation for 4.14)
    - 5.0+: modules in src/ are compiled
  *)
 
@@ -11,7 +12,7 @@ open Jbuild_plugin.V1
 
 let modules =
   let version = Scanf.sscanf ocaml_version "%u.%u" (fun a b -> (a, b)) in
-  if version >= (4, 14) then ":standard" else ""
+  if version >= (4, 07) then ":standard" else ""
 
 let dune_fragment_for mod_name basename =
   Printf.sprintf {|
@@ -28,14 +29,13 @@ let dune_fragment_for mod_name basename =
 (rule
   (target %s.mli)
   (action (with-stdout-to %%{target}
-    (echo "[@@@ocaml.warning \"-3\"]\n\
-           include module type of struct include %s end")))
+    (echo "include module type of struct include %s end")))
   (enabled_if (< %%{ocaml_version} 5.0)))
 
 (rule
   (target %s.ml)
   (action (with-stdout-to %%{target}
-    (echo "[@@@ocaml.warning \"-3\"] include %s")))
+    (echo "include %s")))
   (enabled_if (< %%{ocaml_version} 5.0)))|}
     basename basename basename mod_name basename mod_name
 
@@ -44,9 +44,19 @@ let () =
   let genlex = dune_fragment_for "Genlex" "genlex" in
   Printf.ksprintf send {|
 %s %s
+(rule
+  (action (with-stdout-to flags.sexp (echo "(-w -9)")))
+  (enabled_if (>= %%{ocaml_version} 5.0)))
+(rule
+  (action (with-stdout-to flags.sexp (echo "(-w -3)")))
+  (enabled_if (and (>= %%{ocaml_version} 4.14) (< %%{ocaml_version} 5.0))))
+(rule
+  (action (with-stdout-to flags.sexp (echo "()")))
+  (enabled_if (< %%{ocaml_version} 4.14)))
+
 (library
   (name camlp_streams)
   (public_name camlp-streams)
   (modules %s)
   (wrapped false)
-  (flags :standard -w -9))|} stream genlex modules
+  (flags :standard (:include flags.sexp)))|} stream genlex modules
