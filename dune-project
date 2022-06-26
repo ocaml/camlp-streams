@@ -5,6 +5,7 @@
 (name camlp-streams)
 (source (github ocaml/camlp-streams))
 (authors "Daniel de Rauglaudre" "Xavier Leroy")
+(license "LGPL-2.1-only WITH OCaml-LGPL-linking-exception")
 (maintainers
   "Florian Angeletti <florian.angeletti@inria.fr>"
   "Xavier Leroy <xavier.leroy@college-de-france.fr>")

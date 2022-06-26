@@ -28,6 +28,7 @@ maintainer: [
   "Xavier Leroy <xavier.leroy@college-de-france.fr>"
 ]
 authors: ["Daniel de Rauglaudre" "Xavier Leroy"]
+license: "LGPL-2.1-only WITH OCaml-LGPL-linking-exception"
 homepage: "https://github.com/ocaml/camlp-streams"
 bug-reports: "https://github.com/ocaml/camlp-streams/issues"
 depends: [
