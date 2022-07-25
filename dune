@@ -1,63 +1,88 @@
-(* -*- tuareg -*- *)
+; camlp-streams is built in three different ways, depending on the version of
+; OCaml it's built for:
+; - 4.13 and earlier: empty library; Standard Library Stream and Genlex used
+;   directly, since it's not possible in these versions to override the modules
+; - 4.14: Standard Library Stream and Genlex re-exported without deprecation
+; - 5.0+: modules in src/ are compiled
+; Note that on OCaml 4.10 and earlier for MSVC and 4.04 and earlier for macOS, a
+; dummy module CamlinternalCamlp_streams is added to workaround the inability to
+; create empty .cmxa files on both those platforms.
 
-(* camlp-streams is built in three different ways, depending on the version of
-   OCaml it's built for:
-   - 4.07 and earlier: empty library; Standard Library Stream and Genlex used
-     directly, since it's not possible in these versions to override the modules
-   - 4.08-4.14: Standard Library Stream and Genlex re-exported (without
-     deprecation for 4.14)
-   - 5.0+: modules in src/ are compiled
- *)
-
-open Jbuild_plugin.V1
-
-let modules =
-  let version = Scanf.sscanf ocaml_version "%u.%u" (fun a b -> (a, b)) in
-  if version >= (4, 08) then ":standard" else ""
-
-let dune_fragment_for mod_name basename =
-  Printf.sprintf {|
+; Use the files in src/ for OCaml 5.0+
 (rule
-  (target %s.mli)
-  (action (copy src/%%{target} %%{target}))
-  (enabled_if (>= %%{ocaml_version} 5.0)))
+  (target stream.mli)
+  (action (copy src/%{target} %{target}))
+  (enabled_if (>= %{ocaml_version} 5.0)))
 
 (rule
-  (target %s.ml)
-  (action (copy src/%%{target} %%{target}))
-  (enabled_if (>= %%{ocaml_version} 5.0)))
+  (target stream.ml)
+  (action (copy src/%{target} %{target}))
+  (enabled_if (>= %{ocaml_version} 5.0)))
 
 (rule
-  (target %s.mli)
-  (action (with-stdout-to %%{target}
-    (echo "include module type of struct include %s end")))
-  (enabled_if (< %%{ocaml_version} 5.0)))
+  (target genlex.mli)
+  (action (copy src/%{target} %{target}))
+  (enabled_if (>= %{ocaml_version} 5.0)))
 
 (rule
-  (target %s.ml)
-  (action (with-stdout-to %%{target}
-    (echo "include %s")))
-  (enabled_if (< %%{ocaml_version} 5.0)))|}
-    basename basename basename mod_name basename mod_name
+  (target genlex.ml)
+  (action (copy src/%{target} %{target}))
+  (enabled_if (>= %{ocaml_version} 5.0)))
 
-let () =
-  let stream = dune_fragment_for "Stream" "stream" in
-  let genlex = dune_fragment_for "Genlex" "genlex" in
-  Printf.ksprintf send {|
-%s %s
 (rule
-  (action (with-stdout-to flags.sexp (echo "(-w -9)")))
-  (enabled_if (>= %%{ocaml_version} 5.0)))
+  (target flags.sexp)
+  (action (copy src/%{target} %{target}))
+  (enabled_if (>= %{ocaml_version} 5.0)))
+
+; Re-export Stream and Genlex directly in OCaml 4.14 to remove the deprecation
+; warning
 (rule
-  (action (with-stdout-to flags.sexp (echo "(-w -3)")))
-  (enabled_if (and (>= %%{ocaml_version} 4.14) (< %%{ocaml_version} 5.0))))
+  (target stream.mli)
+  (action (with-stdout-to %{target}
+    (echo "include module type of struct include Stream end")))
+  (enabled_if (and (>= %{ocaml_version} 4.14) (< %{ocaml_version} 5.0))))
+
+(rule
+  (target stream.ml)
+  (action (with-stdout-to %{target}
+    (echo "include Stream")))
+  (enabled_if (and (>= %{ocaml_version} 4.14) (< %{ocaml_version} 5.0))))
+
+(rule
+  (target genlex.mli)
+  (action (with-stdout-to %{target}
+    (echo "include module type of struct include Genlex end")))
+  (enabled_if (and (>= %{ocaml_version} 4.14) (< %{ocaml_version} 5.0))))
+
+(rule
+  (target genlex.ml)
+  (action (with-stdout-to %{target}
+    (echo "include Genlex")))
+  (enabled_if (and (>= %{ocaml_version} 4.14) (< %{ocaml_version} 5.0))))
+
+(rule
+  (action (with-stdout-to flags.sexp (echo "(-alert -deprecated)")))
+  (enabled_if (and (>= %{ocaml_version} 4.14) (< %{ocaml_version} 5.0))))
+
+; Do nothing for OCaml 4.13 and earlier - Dune will then create an empty library
+; OCaml 4.04 on macOS and OCaml 4.10 and earlier with the Microsoft C compiler
+; on Windows cannot create empty .cmxa files. On these specific systems and
+; versions, the empty module CamlinternalCamlp_streams is created. This name
+; doesn't conflict with the official compiler release and modules prefixed
+; Camlinternal are not supposed to be created outside the compiler distribution.
+
+(rule
+  (target camlinternalCamlp_streams.ml)
+  (action (with-stdout-to %{target} (echo "")))
+  (enabled_if (or (and (< %{ocaml_version} 4.11) (= %{ocaml-config:ccomp_type} msvc))
+                  (and (< %{ocaml_version} 4.05) (= %{system} macosx)))))
+
 (rule
   (action (with-stdout-to flags.sexp (echo "()")))
-  (enabled_if (< %%{ocaml_version} 4.14)))
+  (enabled_if (< %{ocaml_version} 4.14)))
 
 (library
   (name camlp_streams)
   (public_name camlp-streams)
-  (modules %s)
   (wrapped false)
-  (flags :standard (:include flags.sexp)))|} stream genlex modules
+  (flags :standard (:include flags.sexp)))
