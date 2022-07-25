@@ -58,7 +58,7 @@
   (enabled_if (and (>= %{ocaml_version} 4.14) (< %{ocaml_version} 5.0))))
 
 (rule
-  (action (with-stdout-to flags.sexp (echo "(-w -3)")))
+  (action (with-stdout-to flags.sexp (echo "(-alert -deprecated)")))
   (enabled_if (and (>= %{ocaml_version} 4.14) (< %{ocaml_version} 5.0))))
 
 ; Do nothing for OCaml 4.13 and earlier - Dune will then create an empty library
