@@ -1,9 +1,8 @@
 ; camlp-streams is built in three different ways, depending on the version of
 ; OCaml it's built for:
-; - 4.07 and earlier: empty library; Standard Library Stream and Genlex used
+; - 4.13 and earlier: empty library; Standard Library Stream and Genlex used
 ;   directly, since it's not possible in these versions to override the modules
-; - 4.08-4.14: Standard Library Stream and Genlex re-exported (without
-;   deprecation for 4.14)
+; - 4.14: Standard Library Stream and Genlex re-exported without deprecation
 ; - 5.0+: modules in src/ are compiled
 
 ; Use the files in src/ for OCaml 5.0+
@@ -32,36 +31,38 @@
   (action (copy src/%{target} %{target}))
   (enabled_if (>= %{ocaml_version} 5.0)))
 
-; Re-export Stream and Genlex directly in OCaml 4.08-4.14
+; Re-export Stream and Genlex directly in OCaml 4.14 to remove the deprecation
+; warning
 (rule
   (target stream.mli)
   (action (with-stdout-to %{target}
     (echo "include module type of struct include Stream end")))
-  (enabled_if (and (>= %{ocaml_version} 4.08) (< %{ocaml_version} 5.0))))
+  (enabled_if (and (>= %{ocaml_version} 4.14) (< %{ocaml_version} 5.0))))
 
 (rule
   (target stream.ml)
   (action (with-stdout-to %{target}
     (echo "include Stream")))
-  (enabled_if (and (>= %{ocaml_version} 4.08) (< %{ocaml_version} 5.0))))
+  (enabled_if (and (>= %{ocaml_version} 4.14) (< %{ocaml_version} 5.0))))
 
 (rule
   (target genlex.mli)
   (action (with-stdout-to %{target}
     (echo "include module type of struct include Genlex end")))
-  (enabled_if (and (>= %{ocaml_version} 4.08) (< %{ocaml_version} 5.0))))
+  (enabled_if (and (>= %{ocaml_version} 4.14) (< %{ocaml_version} 5.0))))
 
 (rule
   (target genlex.ml)
   (action (with-stdout-to %{target}
     (echo "include Genlex")))
-  (enabled_if (and (>= %{ocaml_version} 4.08) (< %{ocaml_version} 5.0))))
+  (enabled_if (and (>= %{ocaml_version} 4.14) (< %{ocaml_version} 5.0))))
 
 (rule
   (action (with-stdout-to flags.sexp (echo "(-w -3)")))
   (enabled_if (and (>= %{ocaml_version} 4.14) (< %{ocaml_version} 5.0))))
 
-; Do nothing for OCaml 4.07 and earlier - Dune will then create an empty library
+; Do nothing for OCaml 4.13 and earlier - Dune will then create an empty library
+
 (rule
   (action (with-stdout-to flags.sexp (echo "()")))
   (enabled_if (< %{ocaml_version} 4.14)))
