@@ -28,7 +28,8 @@
   (enabled_if (>= %{ocaml_version} 5.0)))
 
 (rule
-  (action (with-stdout-to flags.sexp (echo "(-w -9)")))
+  (target flags.sexp)
+  (action (copy src/%{target} %{target}))
   (enabled_if (>= %{ocaml_version} 5.0)))
 
 ; Re-export Stream and Genlex directly in OCaml 4.08-4.14
