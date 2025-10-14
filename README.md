@@ -10,4 +10,4 @@ The two modules are designed for use with [Camlp4](https://github.com/camlp4/cam
 
 The `Stream` module can also be used by hand-written recursive-descent parsers, but is not very convenient for this purpose.
 
-The `Stream` and `Genlex` modules have been part of the OCaml standard library for a long time, and have been distributed as part of the core OCaml system. They will be removed from the OCaml standard library at some future point, but will be maintained and distributed separately in this `camlp-streams` package.
+The `Stream` and `Genlex` modules were part of the OCaml standard library and  distributed as part of the core OCaml system until OCaml 5.0.  They were removed from the OCaml standard library in OCaml 5.0.  Since then, they have been maintained and distributed separately in this `camlp-streams` package.
